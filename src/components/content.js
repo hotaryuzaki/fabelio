@@ -57,12 +57,41 @@ function Content() {
   // HANDLER FILTER DELIVERY
   useEffect(() => {
     if (Object.keys(data).length > 0) {
+      let fromDay = 0;
+      let toDay = 0;
+
+      switch(parseInt(filterDelivery)) {
+        case 1:
+          fromDay = 1;
+          toDay = 7;
+          break;
+        case 2:
+          fromDay = 8;
+          toDay = 14;
+          break;
+        case 3:
+          fromDay = 22;
+          toDay = 30;
+          break;
+        case 4:
+          fromDay = 31;
+          toDay = 365;
+          break;
+        default:
+          fromDay = 1;
+          toDay = 365;
+      }
+
+      // console.log(filterDelivery, fromDay, toDay);
+
       const dataSearch = data.products.filter((product, index, arr) => {
-        const name = product.name.toLowerCase();
-        if (name.includes(search)) {
-          return arr;
+        const delivery = parseInt(product.delivery_time);
+
+        if (delivery >= fromDay && delivery <= toDay) {
+          return product;
         }
       });
+          console.log(dataSearch);
 
       setProducts(dataSearch); // FOR SEARCH & FILTER DATA
     }
@@ -134,7 +163,7 @@ function Content() {
             </div>
             <div className="col50">
               <div className="filter">
-                asd
+                <input className="search" type="text" placeholder="Search Delivery" value={filterDelivery} onChange={event => setFilterDelivery(event.target.value)} />
               </div>
             </div>
           </div>
