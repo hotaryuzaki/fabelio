@@ -3,22 +3,82 @@ import axios from 'axios';
 
 function Content() {
   const [data, setData] = useState({});
+  const [furnitures, setFurnitures] = useState({});
+  const [products, setProducts] = useState({});
+  const [search, setSearch] = useState('');
+  const [filterStyle, setFilterStyle] = useState('');
+  const [filterDelivery, setFilterDelivery] = useState(0);
 
   useEffect(() => {
     async function getData() {
       const result = await axios("http://www.mocky.io/v2/5c9105cb330000112b649af8");
-      // console.log(result.data);
-      setData(result.data);
+      setData(result.data); // FOR MASTER DATA
+      setFurnitures(result.data.furniture_styles); // FOR SEARCH & FILTER DATA
+      setProducts(result.data.products); // FOR SEARCH & FILTER DATA
     }
 
     getData();
   }, [])
 
+  // HANDLER SEARCH INPUT
+  useEffect(() => {
+    if (Object.keys(data).length > 0) {
+      const dataSearch = data.products.filter((product, index, arr) => {
+        const name = product.name.toLowerCase();
+        if (name.includes(search)) {
+          return product;
+        }
+      });
+
+      setProducts(dataSearch); // FOR SEARCH & FILTER DATA
+    }
+  }, [search])
+
+  // HANDLER FILTER FURNITURE STYLE
+  useEffect(() => {
+    if (Object.keys(data).length > 0) {
+      const dataSearch = data.products.filter((product, index, arr) => {
+        // USING FIND INDEX SO IF FIND ONE FROM ARRAY THE RECURSIVE WILL STOP
+        const fStyle = product.furniture_style.findIndex(style => {
+          const fstyle = style.toLowerCase();
+          if (fstyle.includes(filterStyle)) {
+            return true;
+          }
+        });
+
+        const ret = fStyle !== -1 ? product : '';
+        return ret;
+      });
+
+      setProducts(dataSearch); // FOR SEARCH & FILTER DATA
+    }
+  }, [filterStyle])
+
+  // HANDLER FILTER DELIVERY
+  useEffect(() => {
+    if (Object.keys(data).length > 0) {
+      const dataSearch = data.products.filter((product, index, arr) => {
+        const name = product.name.toLowerCase();
+        if (name.includes(search)) {
+          return arr;
+        }
+      });
+
+      setProducts(dataSearch); // FOR SEARCH & FILTER DATA
+    }
+  }, [filterDelivery])
+
+  function numberWithCommas(x) {
+    const y = x.toFixed(0);
+    return y.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+
+  // RENDER PRODUCT LIST 
   function ProductList(props) {
     if (Object.keys(props.data).length > 0) {
       const items = props.data;
-      const listItems = items.products.map((product) =>
-        <div className="productCont">
+      const listItems = items.map((product, key) =>
+        <div key={key} className="productCont">
           <div className="productBox">
             <div className="product">
               <div className="prodHead">
@@ -52,11 +112,6 @@ function Content() {
       return true;
   }
 
-  function numberWithCommas(x) {
-    const y = x.toFixed(0);
-    return y.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  }
-
   
   return (
     <>
@@ -65,7 +120,7 @@ function Content() {
           <div className="row">
             <div className="col50">
               <div className="filter">
-                <input className="search" type="text" name="name" placeholder="Search Furniture" />
+                <input className="search" type="text" placeholder="Search Furniture" value={search} onChange={event => setSearch(event.target.value.toLowerCase())} />
               </div>
             </div>
           </div>
@@ -73,7 +128,8 @@ function Content() {
           <div className="row">
             <div className="col50">
               <div className="filter">
-                asd
+                
+                <input className="search" type="text" placeholder="Search Furniture" value={filterStyle} onChange={event => setFilterStyle(event.target.value.toLowerCase())} />
               </div>
             </div>
             <div className="col50">
@@ -86,7 +142,7 @@ function Content() {
       </header>
 
       <div className="content">
-        <ProductList data={data} />
+        <ProductList data={products} />
       </div>
     </>
   )

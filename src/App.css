@@ -1,3 +1,7 @@
+body {
+  background-color: #f0f0f0;
+}
+
 .App {
   display: flex;
   flex-wrap: wrap;
@@ -34,12 +38,12 @@ footer {
 }
 .col50 {
   width: 50%;
-  background-color: #282c34;
+  /*background-color: #282c34;*/
 }
 .filter {
   margin: 10px;
   padding: 5px;
-  border-bottom: 1px solid silver;
+  border-bottom: .5px solid #d0d0d0;
   /*background-color: #282c34;*/
 }
 .search {
