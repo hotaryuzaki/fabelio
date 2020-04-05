@@ -28,6 +28,8 @@ function queryFilterDelivery(searchDelivery, queryDelivery) {
           if (delivery >= rangeDay.fromDay && delivery <= rangeDay.toDay) {
             return true;
           }
+
+          return false;
         });
 
         return prodDelivery !== -1 ? product : '';

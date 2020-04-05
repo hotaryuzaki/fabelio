@@ -12,6 +12,8 @@ function queryFilterStyle(searchFurniture, queryFilterStyle) {
             if (pStyle === fStyle.value) {
               return true;
             }
+
+            return false;
           });
 
           return dataFStyle !== -1 ? true : false;
