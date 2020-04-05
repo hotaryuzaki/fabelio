@@ -1,13 +1,20 @@
 import React, { useState, useEffect} from 'react';
 import axios from 'axios';
+import MySelect from './MySelect.js';
 
 function Content() {
   const [data, setData] = useState({});
   const [furnitures, setFurnitures] = useState({});
   const [products, setProducts] = useState({});
   const [search, setSearch] = useState('');
-  const [filterStyle, setFilterStyle] = useState('');
-  const [filterDelivery, setFilterDelivery] = useState(0);
+  const [filterStyle, setFilterStyle] = useState([]);
+  const [filterDelivery, setFilterDelivery] = useState([]);
+  const delivery = [
+    { value: "1", label: "1 week" },
+    { value: "2", label: "2 weeks" },
+    { value: "3", label: "1 month" },
+    { value: "4", label: "more" },
+  ];
 
   useEffect(() => {
     async function getData() {
@@ -20,86 +27,172 @@ function Content() {
     getData();
   }, [])
 
-  // HANDLER SEARCH INPUT
+  // HANDLER SEARCH INPUT & FILTER FURNITURE STYLE & FILTER DELIVERY
   useEffect(() => {
     if (Object.keys(data).length > 0) {
-      const dataSearch = data.products.filter((product, index, arr) => {
-        const name = product.name.toLowerCase();
-        if (name.includes(search)) {
-          return product;
-        }
-      });
 
-      setProducts(dataSearch); // FOR SEARCH & FILTER DATA
+      // FILTER STEP 1 => BY SEARCH
+      const dataSearch = querySearch(data.products);
+      // FILTER STEP 2 => BY FURNITURE STYLE
+      const dataFilterFurniture = queryFilterStyle(dataSearch);
+      // FILTER STEP 3 => BY DELIVERY TIME
+      const dataFilterDelivery = queryFilterDelivery(dataFilterFurniture);
+
+      setProducts(dataFilterDelivery);
     }
-  }, [search])
+  }, [search, filterStyle, filterDelivery])
 
   // HANDLER FILTER FURNITURE STYLE
-  useEffect(() => {
-    if (Object.keys(data).length > 0) {
-      const dataSearch = data.products.filter((product, index, arr) => {
-        // USING FIND INDEX SO IF FIND ONE FROM ARRAY THE RECURSIVE WILL STOP
-        const fStyle = product.furniture_style.findIndex(style => {
-          const fstyle = style.toLowerCase();
-          if (fstyle.includes(filterStyle)) {
-            return true;
-          }
-        });
+  // useEffect(() => {
+  //   if (Object.keys(data).length > 0) {
 
-        const ret = fStyle !== -1 ? product : '';
-        return ret;
-      });
+  //     // FILTER STEP 1 => BY SEARCH
+  //     const dataSearch = querySearch(data.products);
+  //     // FILTER STEP 2 => BY FURNITURE STYLE
+  //     const dataFilterFurniture = queryFilterStyle(dataSearch);
+  //     // FILTER STEP 3 => BY DELIVERY TIME
+  //     // const dataFilterDelivery = queryFilterDelivery(dataFilterFurniture);
 
-      setProducts(dataSearch); // FOR SEARCH & FILTER DATA
-    }
-  }, [filterStyle])
+  //     setProducts(dataFilterFurniture);
+  //   }
+  // }, [filterStyle])
 
   // HANDLER FILTER DELIVERY
-  useEffect(() => {
-    if (Object.keys(data).length > 0) {
-      let fromDay = 0;
-      let toDay = 0;
+  // useEffect(() => {
+  //   if (Object.keys(data).length > 0) {
 
-      switch(parseInt(filterDelivery)) {
-        case 1:
-          fromDay = 1;
-          toDay = 7;
-          break;
-        case 2:
-          fromDay = 8;
-          toDay = 14;
-          break;
-        case 3:
-          fromDay = 22;
-          toDay = 30;
-          break;
-        case 4:
-          fromDay = 31;
-          toDay = 365;
-          break;
-        default:
-          fromDay = 1;
-          toDay = 365;
-      }
+  //     // FILTER STEP 1 => BY SEARCH
+  //     const dataSearch = querySearch(data.products);
+  //     // FILTER STEP 2 => BY FURNITURE STYLE
+  //     const dataFilterFurniture = queryFilterStyle(dataSearch);
+  //     // FILTER STEP 3 => BY DELIVERY TIME
+  //     const dataFilterDelivery = queryFilterDelivery(dataFilterFurniture);
 
-      // console.log(filterDelivery, fromDay, toDay);
-
-      const dataSearch = data.products.filter((product, index, arr) => {
-        const delivery = parseInt(product.delivery_time);
-
-        if (delivery >= fromDay && delivery <= toDay) {
-          return product;
-        }
-      });
-          console.log(dataSearch);
-
-      setProducts(dataSearch); // FOR SEARCH & FILTER DATA
-    }
-  }, [filterDelivery])
+  //     setProducts(dataFilterDelivery);
+  //   }
+  // }, [filterDelivery])
 
   function numberWithCommas(x) {
     const y = x.toFixed(0);
     return y.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+
+  function querySearch(searchData) {
+    const dataSearch = searchData.filter((product, index, arr) => {
+      const name = product.name.toLowerCase();
+      if (name.includes(search)) {
+        return product;
+      }
+    });
+
+    return dataSearch;
+  }
+
+  function queryFilterStyle(searchFurniture) {
+    const dataFurniture = searchFurniture.filter((product, index, arr) => {
+
+      // USING FIND INDEX SO IF FIND ONE FROM ARRAY THE RECURSIVE WILL STOP
+      const prodStyle = product.furniture_style.findIndex(pStyle => {
+
+        // USING FIND INDEX SO IF FIND ONE FROM ARRAY THE RECURSIVE WILL STOP
+        if (filterStyle) { // BEHAVIOR TIDAK KONSISTEN, MENCEGAH RETURN NULL
+          if (filterStyle.length > 0) { // BEHAVIOR TIDAK KONSISTEN, MENCEGAH RETURN EMPTY ARRAY
+            const dataFStyle = filterStyle.findIndex(fStyle => {
+              if (pStyle === fStyle.value) {
+                return true;
+              }
+            });
+
+            return dataFStyle !== -1 ? true : false;
+          }
+          else // UNTUK RESET FILTER => SHOW ALL DATA
+            return true;
+        }
+        else // UNTUK RESET FILTER => SHOW ALL DATA
+          return true;
+      });
+
+      const ret = prodStyle !== -1 ? product : '';
+      return ret;
+    });
+
+    return dataFurniture;
+  }
+
+  function queryFilterDelivery(searchDelivery) {
+    let rangeDay = {};
+
+    const dataDelivery = searchDelivery.filter((product, index, arr) => {
+      if (filterDelivery) { // BEHAVIOR TIDAK KONSISTEN, MENCEGAH RETURN NULL
+        if (filterDelivery.length > 0) { // BEHAVIOR TIDAK KONSISTEN, MENCEGAH RETURN EMPTY ARRAY
+
+          const prodDelivery = filterDelivery.map(option => {
+            switch(parseInt(option.value)) {
+              case 1:
+                rangeDay = {'fromDay': 1, 'toDay': 7};
+                break;
+              case 2:
+                rangeDay = {'fromDay': 8, 'toDay': 14};
+                break;
+              case 3:
+                rangeDay = {'fromDay': 22, 'toDay': 30};
+                break;
+              case 4:
+                rangeDay = {'fromDay': 31, 'toDay': 365};
+                break;
+              default:
+                rangeDay = {'fromDay': 1, 'toDay': 365};
+            }
+
+            const delivery = parseInt(product.delivery_time);
+            if (delivery >= rangeDay.fromDay && delivery <= rangeDay.toDay) {
+              return true;
+            }
+          });
+
+          const ret = prodDelivery[0] ? product : '';
+          return ret;
+        }
+        else // UNTUK RESET FILTER => SHOW ALL DATA
+          return product;
+      }
+      else // UNTUK RESET FILTER => SHOW ALL DATA
+        return product;
+    });
+    
+    return dataDelivery;
+  }
+
+  // RENDER SELECT FURNITURE STYLE
+  function FilterFurniture(props) {
+    if (Object.keys(props.data).length > 0) {
+      let options = [];
+      const items = props.data;
+      items.map((style) => {
+        return options.push({ label: style, value: style});
+      });
+
+      return <MySelect
+        // className="fFurniture"
+        placeholder="Furniture Style"
+        options={options}
+        value={filterStyle}
+        onChangeCallback={response => setFilterStyle(response)}
+      />
+    }
+    else // FIRST RENDER THE DATA IS EMPTY SO GIVE THIS RETURN SO NO ERROR
+      return true;
+  }
+
+  // RENDER SELECT DELIVERY
+  function FilterDelivery() {
+    return <MySelect
+      // className="fFurniture"
+      placeholder="Furniture Delivery"
+      options={delivery}
+      value={filterDelivery}
+      onChangeCallback={response => setFilterDelivery(response)}
+    />
   }
 
   // RENDER PRODUCT LIST 
@@ -128,7 +221,7 @@ function Content() {
               </div>
 
               <div className="prodDelivery">
-                Delivery days : {product.delivery_time} hari
+                Delivery time : {product.delivery_time} hari
               </div>
             </div>
           </div>
@@ -157,13 +250,13 @@ function Content() {
           <div className="row">
             <div className="col50">
               <div className="filter">
-                
-                <input className="search" type="text" placeholder="Search Furniture" value={filterStyle} onChange={event => setFilterStyle(event.target.value.toLowerCase())} />
+                <FilterFurniture data={furnitures} />
               </div>
             </div>
+
             <div className="col50">
               <div className="filter">
-                <input className="search" type="text" placeholder="Search Delivery" value={filterDelivery} onChange={event => setFilterDelivery(event.target.value)} />
+                <FilterDelivery />
               </div>
             </div>
           </div>
