@@ -1,3 +1,6 @@
+Fabelio Furniture Search apps!
+You can see the demo [here](https://hotaryuzaki.github.io/fabelio/).
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
