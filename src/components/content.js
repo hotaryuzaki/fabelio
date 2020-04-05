@@ -26,7 +26,7 @@ function Content() {
   // GET API DATA KETIKA RENDER PERTAMA
   useEffect(() => {
     async function getData() {
-      const result = await axios("http://www.mocky.io/v2/5c9105cb330000112b649af8");
+      const result = await axios("https://www.mocky.io/v2/5c9105cb330000112b649af8");
       setData(result.data); // FOR MASTER DATA
       setFurnitures(result.data.furniture_styles); // FOR SEARCH & FILTER DATA
       setProducts(result.data.products); // FOR SEARCH & FILTER DATA
